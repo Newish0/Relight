@@ -34,41 +34,75 @@ const testForXML = (string) => {
     return true;
 }
 
+
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
 
 const reqLoadCodeMirror = async () => {
     const response = await chrome.runtime.sendMessage({ action: "loadCodeMirror" }); // return promise
 
-    if(response === 0)
+    if (response === 0)
         return response;
 
     // Wait until CodeMirror object is defined
-    while (typeof CodeMirror === 'undefined') { 
+    while (typeof CodeMirror === "undefined") {
         await sleep(1)
     }
 
     return response
 }
 
-const launchCodeMirror = async () => {
-    console.debug("[Relight]", "started CM");
-}
 
 const getCodeMirrorMode = async (fileExtension) => {
 
-    // Request to add CodeMirror meta.js
-    const response = await chrome.runtime.sendMessage({ action: "loadMeta" });
+    if(typeof CodeMirror === "undefined") 
+        await reqLoadCodeMirror();
 
-    if(response === 0) 
-       return null;
-    
     // Wait until CodeMirror findModeByExtension is defined
-    while (typeof CodeMirror.findModeByExtension === 'undefined') { 
+    while (typeof CodeMirror.findModeByExtension === "undefined") {
         await sleep(1)
     }
 
     return CodeMirror.findModeByExtension(fileExtension);
 }
+
+
+
+const launchCodeMirror = async (mode) => {
+    console.debug("[Relight]", "started CM");
+
+    const contentEln = document.querySelector("PRE"); 
+    const textContent = contentEln.textContent;
+    const container = document.body;
+
+    // hide original content
+    contentEln.style.display = "none";
+
+    // create instance of CodeMirror editor
+    const editor = CodeMirror(container, {
+        value: textContent,
+        mode: mode.mime, // language mode input uses MIME
+        tabSize: 4,
+        smartIndent: true,
+        // theme: "",
+        lineWrapping: false,
+        lineNumbers: true,
+        autoRefresh: true,
+        // readOnly: false,
+        maxHighlightLength: 1000000,
+        matchBrackets: true,
+        indentUnit: 4,
+        indentGuide: true,
+        hideFirstIndentGuide: true,
+        // foldGutter: true,
+        // gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+        // extraKeys: { "Ctrl-Space": "autocomplete" }
+    });
+
+    editor.setSize("100%", "100%");
+}
+
+
 
 
 
@@ -80,7 +114,7 @@ const main = () => {
         return;
     }
 
-    const cmReady =  reqLoadCodeMirror();
+    const cmReady = reqLoadCodeMirror();
 
     const fileExt = fileExtFromPath(document.location.pathname);
 
@@ -92,16 +126,16 @@ const main = () => {
     }
 
     console.debug("[Relight]", "determined file type as", fileExt);
-    
+
 
     cmReady.then((res) => {
-        if(!res) {
+        if (!res) {
             console.error("[Relight]", "exit: failed to init code mirror");
             return;
-        } 
+        }
 
         getCodeMirrorMode(fileExt).then(mode => {
-            if(mode) launchCodeMirror();
+            if (mode) launchCodeMirror(mode);
             else console.error("[Relight]", "exit: file type not supported");
         });
     });
