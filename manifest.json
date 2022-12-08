@@ -1,0 +1,48 @@
+{
+    "name": "Relight",
+    "description": "Chrome extension for syntax highlighting on plain text pages and light editing.",
+    "version": "1.0",
+    "manifest_version": 3,
+    "background": {
+        "service_worker": "js/background.js"
+    },
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting",
+        "tabs"
+    ],
+    "host_permissions": [
+        "http://*/",
+        "https://*/",
+        "file:///*"
+    ],
+    "icons": {
+        "16": "/icons/icon16.png",
+        "32": "/icons/icon32.png",
+        "48": "/icons/icon48.png",
+        "128": "/icons/icon128.png"
+    },
+    "action": {
+        "default_popup": "html/popup.html",
+        "default_icon": {
+            "16": "/icons/icon16.png",
+            "32": "/icons/icon32.png",
+            "48": "/icons/icon48.png",
+            "128": "/icons/icon128.png"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "js/content-script.js"
+            ],
+            "css": [
+                "css/addon.css"
+            ]
+        }
+    ]
+}
