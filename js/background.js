@@ -30,33 +30,36 @@ const CODEMIRROR_ESSENTIAL_JS = [
 
 
 const handleExecute = (files, sender, sendResponse) => {
-    chrome.scripting.executeScript(
-        {
-            target: { tabId: sender.tab.id },
-            files: files,
-        });
-    sendResponse({ code: 1 })
+    chrome.scripting.executeScript({
+        target: { tabId: sender.tab.id },
+        files: files,
+    })
+    console.debug("[Relight] Load Code Mirror JS from", files);
 }
 
 
 const handleStyle = (files, sender, sendResponse) => {
 
-    chrome.scripting.insertCSS(
-        {
-            target: { tabId: sender.tab.id },
-            files: files,
-        });
+    chrome.scripting.insertCSS({
+        target: { tabId: sender.tab.id },
+        files: files,
+    });
 
-    sendResponse({ code: 1 })
+    console.debug("[Relight] Load Code Mirror CSS from", files);
 }
 
 
 const loadCodeMirror = (sender, sendResponse) => {
-    console.debug("[Relight] Load Code Mirror essential JS from", CODEMIRROR_ESSENTIAL_JS);
-    console.debug("[Relight] Load Code Mirror essential CSS from", CODEMIRROR_ESSENTIAL_CSS);
-
     handleStyle(CODEMIRROR_ESSENTIAL_CSS, sender, sendResponse);
     handleExecute(CODEMIRROR_ESSENTIAL_JS, sender, sendResponse);
+}
+
+
+const loadCodeMirrorMode = (modeObj, sender, sendResponse) => {
+    const { mode } = modeObj;
+    const modePath = `${CODEMIRROR_ROOT}mode/${mode}/${mode}.js`;
+
+    handleExecute([modePath], sender, sendResponse);
 }
 
 
@@ -72,6 +75,10 @@ chrome.runtime.onMessage.addListener(
         switch (request.action) {
             case "loadCodeMirror":
                 loadCodeMirror(sender, sendResponse);
+                break;
+
+            case "loadCodeMirrorMode":
+                loadCodeMirrorMode(request.mode, sender, sendResponse);
                 break;
 
             default:

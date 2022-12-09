@@ -39,23 +39,19 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 
 const reqLoadCodeMirror = async () => {
-    const response = await chrome.runtime.sendMessage({ action: "loadCodeMirror" }); // return promise
-
-    if (response === 0)
-        return response;
+    chrome.runtime.sendMessage({ action: "loadCodeMirror" }); // return promise
 
     // Wait until CodeMirror object is defined
     while (typeof CodeMirror === "undefined") {
         await sleep(1)
     }
 
-    return response
+    return 1
 }
 
 
 const getCodeMirrorMode = async (fileExtension) => {
-
-    if(typeof CodeMirror === "undefined") 
+    if (typeof CodeMirror === "undefined")
         await reqLoadCodeMirror();
 
     // Wait until CodeMirror findModeByExtension is defined
@@ -66,17 +62,35 @@ const getCodeMirrorMode = async (fileExtension) => {
     return CodeMirror.findModeByExtension(fileExtension);
 }
 
+const reqLoadModeDependency = async (mode) => {
+    chrome.runtime.sendMessage({ action: "loadCodeMirrorMode", mode });
+
+    return mode;
+}
+
+
+const modeIsReady = async (mode) => {
+    let tmpEditor;
+    do {
+        tmpEditor = CodeMirror(null, {
+            mode: mode.mime,
+        });
+        await sleep(2);
+    } while (tmpEditor.getMode().name !== mode.mode);
+}
 
 
 const launchCodeMirror = async (mode) => {
     console.debug("[Relight]", "started CM");
 
-    const contentEln = document.querySelector("PRE"); 
+    const contentEln = document.querySelector("PRE");
     const textContent = contentEln.textContent;
     const container = document.body;
 
     // hide original content
     contentEln.style.display = "none";
+
+    await modeIsReady(mode);
 
     // create instance of CodeMirror editor
     const editor = CodeMirror(container, {
@@ -116,7 +130,7 @@ const main = () => {
 
     const cmReady = reqLoadCodeMirror();
 
-    const fileExt = fileExtFromPath(document.location.pathname);
+    let fileExt = fileExtFromPath(document.location.pathname);
 
     if (!fileExt) {
         const text = document.body.firstChild.textContent;
@@ -131,13 +145,19 @@ const main = () => {
     cmReady.then((res) => {
         if (!res) {
             console.error("[Relight]", "exit: failed to init code mirror");
-            return;
+            throw "failed to init code mirror";
         }
 
-        getCodeMirrorMode(fileExt).then(mode => {
-            if (mode) launchCodeMirror(mode);
-            else console.error("[Relight]", "exit: file type not supported");
-        });
+        return getCodeMirrorMode(fileExt);
+    }).then(mode => {
+        if (mode)
+            return reqLoadModeDependency(mode);
+
+        console.error("[Relight]", "exit: file type not supported");
+        throw "failed to init code mirror";
+
+    }).then(mode => {
+        launchCodeMirror(mode);
     });
 } // main
 
