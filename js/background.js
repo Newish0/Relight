@@ -14,7 +14,8 @@ const CODEMIRROR_ESSENTIAL_CSS = [
     CODEMIRROR_ROOT + "doc/docs.css",
     CODEMIRROR_ROOT + "mode/tiddlywiki/tiddlywiki.css",
     CODEMIRROR_ROOT + "mode/tiki/tiki.css",
-    CODEMIRROR_ROOT + "addon/indent-guide/indent-guide.css"
+    CODEMIRROR_ROOT + "addon/indent-guide/indent-guide.css",
+    CODEMIRROR_ROOT + "theme/dracula.css" // TODO: TMP SOLUTION
 ]
 
 const CODEMIRROR_ESSENTIAL_JS = [

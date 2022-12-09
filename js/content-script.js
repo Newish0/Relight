@@ -87,6 +87,10 @@ const launchCodeMirror = async (mode) => {
     const textContent = contentEln.textContent;
     const container = document.body;
 
+    const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (isDarkTheme) container.style.backgroundColor = "#000";
+        
+
     // hide original content
     contentEln.style.display = "none";
 
@@ -98,11 +102,11 @@ const launchCodeMirror = async (mode) => {
         mode: mode.mime, // language mode input uses MIME
         tabSize: 4,
         smartIndent: true,
-        // theme: "",
+        theme: "dracula", // TODO
         lineWrapping: false,
         lineNumbers: true,
         autoRefresh: true,
-        // readOnly: false,
+        readOnly: true,
         maxHighlightLength: 1000000,
         matchBrackets: true,
         indentUnit: 4,
