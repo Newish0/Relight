@@ -39,7 +39,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 
 const reqLoadCodeMirror = async () => {
-    chrome.runtime.sendMessage({ action: "loadCodeMirror" }); // return promise
+    await chrome.runtime.sendMessage({ action: "loadCodeMirror" }); // return promise
 
     // Wait until CodeMirror object is defined
     while (typeof CodeMirror === "undefined") {
@@ -63,7 +63,7 @@ const getCodeMirrorMode = async (fileExtension) => {
 }
 
 const reqLoadModeDependency = async (mode) => {
-    chrome.runtime.sendMessage({ action: "loadCodeMirrorMode", mode });
+    await chrome.runtime.sendMessage({ action: "loadCodeMirrorMode", mode });
 
     return mode;
 }
@@ -75,7 +75,7 @@ const modeIsReady = async (mode) => {
         tmpEditor = CodeMirror(null, {
             mode: mode.mime,
         });
-        await sleep(2);
+        await sleep(1);
     } while (tmpEditor.getMode().name !== mode.mode);
 }
 

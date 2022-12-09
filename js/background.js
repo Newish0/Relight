@@ -30,11 +30,13 @@ const CODEMIRROR_ESSENTIAL_JS = [
 
 
 const handleExecute = (files, sender, sendResponse) => {
-    chrome.scripting.executeScript({
+    let promise = chrome.scripting.executeScript({
         target: { tabId: sender.tab.id },
         files: files,
     })
     console.debug("[Relight] Load Code Mirror JS from", files);
+
+    sendResponse(promise)
 }
 
 
