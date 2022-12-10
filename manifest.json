@@ -38,7 +38,8 @@
                 "<all_urls>"
             ],
             "js": [
-                "js/content-script.js"
+                "js/content-script.js",
+                "js/ui.js"
             ],
             "css": [
                 "css/addon.css"

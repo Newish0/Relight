@@ -69,37 +69,44 @@ const reqLoadModeDependency = async (mode) => {
 }
 
 
-const modeIsReady = async (mode) => {
-    let tmpEditor;
+const refreshModeTillReady = async (editor, mode) => {
     do {
-        tmpEditor = CodeMirror(null, {
-            mode: mode.mime,
-        });
+        editor.setOption("mode", mode.mime);
         await sleep(1);
-    } while (tmpEditor.getMode().name !== mode.mode);
+    } while (editor.getMode().name !== mode.mode);
 }
 
+const modeChangeCallback = (evt, editor) => {
+    const { value } = evt.target;
+    const mode = CodeMirror.findModeByMIME(value);
+    
+    reqLoadModeDependency(mode);
+    editor.setOption("mode", mode.mime);
+    refreshModeTillReady(editor, mode);
+}
 
-const launchCodeMirror = async (mode) => {
+const launchCodeMirror = (mode) => {
     console.debug("[Relight]", "started CM");
 
-    const contentEln = document.querySelector("PRE");
+    const contentEln = document.querySelector("pre");
     const textContent = contentEln.textContent;
-    const container = document.body;
+    const container = UI.createAppContainer();
+    const ui = new UI(container, CodeMirror.modeInfo, mode, (evt) => { modeChangeCallback(evt, editor) });
+
+    document.body.appendChild(container);
+    ui.render();
 
     const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
     if (isDarkTheme) container.style.backgroundColor = "#000";
-        
+
 
     // hide original content
     contentEln.style.display = "none";
 
-    await modeIsReady(mode);
-
     // create instance of CodeMirror editor
     const editor = CodeMirror(container, {
         value: textContent,
-        mode: mode.mime, // language mode input uses MIME
+        mode: mode.mime,
         tabSize: 4,
         smartIndent: true,
         theme: "dracula", // TODO
@@ -118,6 +125,9 @@ const launchCodeMirror = async (mode) => {
     });
 
     editor.setSize("100%", "100%");
+
+    // refresh mode dependency finishes loading
+    refreshModeTillReady(editor, mode);
 }
 
 
