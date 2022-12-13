@@ -79,19 +79,27 @@ const refreshModeTillReady = async (editor, mode) => {
 const modeChangeCallback = (evt, editor) => {
     const { value } = evt.target;
     const mode = CodeMirror.findModeByMIME(value);
-    
+
     reqLoadModeDependency(mode);
     editor.setOption("mode", mode.mime);
     refreshModeTillReady(editor, mode);
 }
 
+
+const lineWrapChangeCallback = (evt, editor) => {
+    const { checked } = evt.target;
+    editor.setOption("lineWrapping", checked);
+}
+
+
 const launchCodeMirror = (mode) => {
     console.debug("[Relight]", "started CM");
 
+    let theme = "dracula";
     const contentEln = document.querySelector("pre");
     const textContent = contentEln.textContent;
-    const container = UI.createAppContainer();
-    const ui = new UI(container, CodeMirror.modeInfo, mode, (evt) => { modeChangeCallback(evt, editor) });
+    const container = RelightUI.createAppContainer();
+    const ui = new RelightUI(container, theme, CodeMirror.modeInfo, mode, (evt) => { modeChangeCallback(evt, editor) }, (evt) => { lineWrapChangeCallback(evt, editor) });
 
     document.body.appendChild(container);
     ui.render();
@@ -109,12 +117,12 @@ const launchCodeMirror = (mode) => {
         mode: mode.mime,
         tabSize: 4,
         smartIndent: true,
-        theme: "dracula", // TODO
+        theme: theme, // TODO: user selectable
         lineWrapping: false,
         lineNumbers: true,
         autoRefresh: true,
         readOnly: true,
-        maxHighlightLength: 1000000,
+        maxHighlightLength: 10000,
         matchBrackets: true,
         indentUnit: 4,
         indentGuide: true,
