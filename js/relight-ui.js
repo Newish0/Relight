@@ -2,21 +2,32 @@
 // Trying to be like React...
 class RelightUI {
 
-    constructor(root, theme, langList, defaultLang, langSelCallback, lineWrapCallback) {
+    constructor(root, theme, langList, defaultLang, langSelCallback, lineWrapCallback, formatCodeCallback) {
         this.root = root;
         this.theme = theme;
+        this.elements = []
 
         const langSel = this.createLangSel(langList, defaultLang, langSelCallback);
         const lineWrap = this.createLineWrap(lineWrapCallback);
-        this.toolbar = this.createToolbar(langSel, lineWrap);
+        const autoFormatBtn = this.createFormatCodeBtn(formatCodeCallback);
+
+        this.elements.push(this.createToolbar(langSel, lineWrap, autoFormatBtn));
 
     }
 
     render() {
-        for(const eln of this.root.querySelectorAll(".Relight-UI"))
+        for (const eln of this.elements)
             eln.remove();
 
-        this.root.appendChild(this.toolbar)
+        this.root.append(...this.elements)
+    }
+
+    createFormatCodeBtn(formatCodeCallback) {
+        const btn = document.createElement("button");
+        btn.textContent = "Format Code";
+        btn.addEventListener("click", formatCodeCallback);
+        btn.className = "Relight-UI Format-Code";
+        return btn;
     }
 
     createLineWrap(lineWrapCallback) {

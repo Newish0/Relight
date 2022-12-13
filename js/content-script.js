@@ -92,6 +92,36 @@ const lineWrapChangeCallback = (evt, editor) => {
 }
 
 
+const formatCodeCallback = async (evt, editor) => {
+    let modeName = editor.getMode().name;
+
+    switch (modeName) {
+        case "htmlmixed":
+        case "html":
+        case "xml":
+            console.log("TODO format as HTML")
+            break;
+        case "css":
+            console.log("TODO format as CSS")
+            break;
+        case "javascript":
+        default:
+            if (typeof js_beautify === "undefined") {
+                await chrome.runtime.sendMessage({ action: "loadBeautify", mode: "js" });
+            }
+
+            while (typeof js_beautify === "undefined") {
+                await sleep(1);
+            }
+
+            const options = { indent_size: 2, space_in_empty_paren: true }
+
+            editor.setValue(js_beautify(editor.getValue(), options));
+    }
+}
+
+
+
 const launchCodeMirror = (mode) => {
     console.debug("[Relight]", "started CM");
 
@@ -99,7 +129,14 @@ const launchCodeMirror = (mode) => {
     const contentEln = document.querySelector("pre");
     const textContent = contentEln.textContent;
     const container = RelightUI.createAppContainer();
-    const ui = new RelightUI(container, theme, CodeMirror.modeInfo, mode, (evt) => { modeChangeCallback(evt, editor) }, (evt) => { lineWrapChangeCallback(evt, editor) });
+    const ui = new RelightUI(container,
+        theme,
+        CodeMirror.modeInfo,
+        mode,
+        (evt) => { modeChangeCallback(evt, editor) },
+        (evt) => { lineWrapChangeCallback(evt, editor) },
+        (evt) => { formatCodeCallback(evt, editor) }
+    );
 
     document.body.appendChild(container);
     ui.render();

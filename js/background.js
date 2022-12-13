@@ -1,4 +1,15 @@
-const CODEMIRROR_ROOT = "lib/codemirror-5.65.3/";
+const LIB_ROOT = "js/lib/";
+
+
+const BEAUTIFY_ROOT = LIB_ROOT + "js-beautify-1.14.7/";
+const BEAUTIFY_FILES = {
+    js: BEAUTIFY_ROOT + "beautify.min.js",
+    css: BEAUTIFY_ROOT + "beautify-css.min.js",
+    html: BEAUTIFY_ROOT + "beautify-html.min.js",
+}
+
+
+const CODEMIRROR_ROOT = LIB_ROOT + "codemirror-5.65.3/";
 
 const CODEMIRROR_ESSENTIAL_CSS = [
     CODEMIRROR_ROOT + "lib/codemirror.css",
@@ -34,8 +45,8 @@ const handleExecute = (files, sender, sendResponse) => {
     let promise = chrome.scripting.executeScript({
         target: { tabId: sender.tab.id },
         files: files,
-    })
-    console.debug("[Relight] Load Code Mirror JS from", files);
+    }); // TODO: Figure out how callback works and get rid of sleep in content-script
+    console.debug("[Relight] Load JS file from", files);
 
     sendResponse(promise)
 }
@@ -46,9 +57,9 @@ const handleStyle = (files, sender, sendResponse) => {
     chrome.scripting.insertCSS({
         target: { tabId: sender.tab.id },
         files: files,
-    });
+    });  // TODO: Figure out how callback works to ensure stability
 
-    console.debug("[Relight] Load Code Mirror CSS from", files);
+    console.debug("[Relight] Load CSS file from", files);
 }
 
 
@@ -66,6 +77,14 @@ const loadCodeMirrorMode = (modeObj, sender, sendResponse) => {
 }
 
 
+const loadBeautify = (beautifyMode, sender, sendResponse) => {
+    const file = BEAUTIFY_FILES[beautifyMode];
+    
+    // TODO error handling for invalid beautifyMode
+
+    handleExecute([file], sender, sendResponse);
+}
+
 
 // Message handler
 chrome.runtime.onMessage.addListener(
@@ -82,6 +101,10 @@ chrome.runtime.onMessage.addListener(
 
             case "loadCodeMirrorMode":
                 loadCodeMirrorMode(request.mode, sender, sendResponse);
+                break;
+
+            case "loadBeautify":
+                loadBeautify(request.mode, sender, sendResponse);
                 break;
 
             default:
