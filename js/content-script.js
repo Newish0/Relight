@@ -92,7 +92,7 @@ const lineWrapChangeCallback = (evt, editor) => {
 }
 
 
-const formatCodeCallback = async (evt, editor) => {
+const formatCode = async (editor) => {
     let modeName = editor.getMode().name;
 
     switch (modeName) {
@@ -106,17 +106,28 @@ const formatCodeCallback = async (evt, editor) => {
             break;
         case "javascript":
         default:
-            if (typeof js_beautify === "undefined") {
+            if (typeof js_beautify === "undefined")
                 await chrome.runtime.sendMessage({ action: "loadBeautify", mode: "js" });
-            }
 
-            while (typeof js_beautify === "undefined") {
+            while (typeof js_beautify === "undefined")
                 await sleep(1);
-            }
 
-            const options = { indent_size: 2, space_in_empty_paren: true }
+            const options = { indent_size: 4, space_in_empty_paren: true }
 
             editor.setValue(js_beautify(editor.getValue(), options));
+    }
+}
+
+
+const autoFormatCode = async (editor) => {
+    const content = editor.getValue();
+    const lines = content.split("\n");
+
+    for (const line of lines) {
+        if (line.length > 1024) {
+            formatCode(editor);
+            return;
+        }
     }
 }
 
@@ -125,7 +136,11 @@ const formatCodeCallback = async (evt, editor) => {
 const launchCodeMirror = (mode) => {
     console.debug("[Relight]", "started CM");
 
+    // TODO move to user defined settings  
     let theme = "dracula";
+    let autoFormat = true;
+
+
     const contentEln = document.querySelector("pre");
     const textContent = contentEln.textContent;
     const container = RelightUI.createAppContainer();
@@ -135,7 +150,7 @@ const launchCodeMirror = (mode) => {
         mode,
         (evt) => { modeChangeCallback(evt, editor) },
         (evt) => { lineWrapChangeCallback(evt, editor) },
-        (evt) => { formatCodeCallback(evt, editor) }
+        () => { formatCode(editor) }
     );
 
     document.body.appendChild(container);
@@ -143,7 +158,6 @@ const launchCodeMirror = (mode) => {
 
     const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
     if (isDarkTheme) container.style.backgroundColor = "#000";
-
 
     // hide original content
     contentEln.style.display = "none";
@@ -169,13 +183,30 @@ const launchCodeMirror = (mode) => {
         // extraKeys: { "Ctrl-Space": "autocomplete" }
     });
 
+    addIndentedWrappedLine(editor);
     editor.setSize("100%", "100%");
 
     // refresh mode dependency finishes loading
     refreshModeTillReady(editor, mode);
+
+    if (autoFormat)
+        autoFormatCode(editor);
 }
 
 
+// Add in indented wrapped line. Source: https://codemirror.net/demo/indentwrap.html
+// NOTE: A hacky implementation of indented wrapped line, so it doesn't always work
+const addIndentedWrappedLine = (editor) => {
+    let charWidth = editor.defaultCharWidth(), basePadding = 4;
+    editor.on("renderLine", function (cm, line, elt) {
+        if (editor.getOption("lineWrapping")) {
+            let off = CodeMirror.countColumn(line.text, null, cm.getOption("tabSize")) * charWidth;
+            elt.style.textIndent = "-" + off + "px";
+            elt.style.paddingLeft = (basePadding + off) + "px";
+        }
+    });
+    editor.refresh();
+}
 
 
 
