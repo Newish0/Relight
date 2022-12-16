@@ -92,43 +92,72 @@ const lineWrapChangeCallback = (evt, editor) => {
 }
 
 
-const formatCode = async (editor) => {
+const formatCode = (editor) => {
     let modeName = editor.getMode().name;
 
     switch (modeName) {
         case "htmlmixed":
         case "html":
         case "xml":
-            console.log("TODO format as HTML")
+            formatCodeAsHTML(editor);
             break;
         case "css":
-            console.log("TODO format as CSS")
+            formatCodeAsCSS(editor);
             break;
         case "javascript":
         default:
-            if (typeof js_beautify === "undefined")
-                await chrome.runtime.sendMessage({ action: "loadBeautify", mode: "js" });
-
-            while (typeof js_beautify === "undefined")
-                await sleep(1);
-
-            const options = { indent_size: 4, space_in_empty_paren: true }
-
-            editor.setValue(js_beautify(editor.getValue(), options));
+            formatCodeAsJS(editor);
     }
 }
 
+const formatCodeAsJS = async (editor) => {
+    if (typeof js_beautify === "undefined")
+        await chrome.runtime.sendMessage({ action: "loadBeautify", mode: "js" });
 
-const autoFormatCode = async (editor) => {
-    const content = editor.getValue();
-    const lines = content.split("\n");
+    while (typeof js_beautify === "undefined")
+        await sleep(1);
+
+    const options = { indent_size: 4, space_in_empty_paren: true }
+
+    editor.setValue(js_beautify(editor.getValue(), options));
+}
+
+const formatCodeAsCSS = async (editor) => {
+    if (typeof css_beautify === "undefined")
+        await chrome.runtime.sendMessage({ action: "loadBeautify", mode: "css" });
+
+    while (typeof css_beautify === "undefined")
+        await sleep(1);
+
+    const options = { indent_size: 4, space_in_empty_paren: true }
+
+    editor.setValue(css_beautify(editor.getValue(), options));
+}
+
+const formatCodeAsHTML = async (editor) => {
+    if (typeof html_beautify === "undefined")
+        await chrome.runtime.sendMessage({ action: "loadBeautify", mode: "html" });
+
+    while (typeof html_beautify === "undefined")
+        await sleep(1);
+
+    const options = { indent_size: 2, space_in_empty_paren: true }
+
+    editor.setValue(html_beautify(editor.getValue(), options));
+}
+
+
+
+const shouldFormat = async (stringContent) => {
+    const lines = stringContent.split("\n");
 
     for (const line of lines) {
-        if (line.length > 1024) {
-            formatCode(editor);
-            return;
+        if (line.length > 4096000) {
+            return true;
         }
     }
+
+    return false;
 }
 
 
@@ -188,10 +217,10 @@ const launchCodeMirror = (mode) => {
     editor.setSize("100%", "100%");
 
     // refresh mode dependency finishes loading
-    refreshModeTillReady(editor, mode);
-
-    if (autoFormat)
-        autoFormatCode(editor);
+    refreshModeTillReady(editor, mode).then(() => {
+        if (autoFormat && shouldFormat(editor.getValue())) console.log("auto formated")
+            formatCode(editor);
+    });
 }
 
 
