@@ -36,7 +36,8 @@ const CODEMIRROR_ESSENTIAL_JS = [
     CODEMIRROR_ROOT + "addon/display/autorefresh.js",
     CODEMIRROR_ROOT + "addon/edit/matchbrackets.js",
     CODEMIRROR_ROOT + "addon/hint/show-hint.js",
-    CODEMIRROR_ROOT + "addon/indent-guide/indent-guide.js"
+    CODEMIRROR_ROOT + "addon/indent-guide/indent-guide.js",
+    CODEMIRROR_ROOT + "addon/selection/active-line.js"
 ]
 
 

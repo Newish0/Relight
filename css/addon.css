@@ -33,5 +33,20 @@
     /* overwrite .CodeMirror */
     height: auto !important;
     overflow: hidden !important;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+        sans-serif;
+}
+
+/* Overwrite CodeMirror Defaults */
+.CodeMirror-activeline-background {
+    background: rgba(255, 255, 255, 0.025) !important;
+}
+
+.cm-indent-guide {
+    border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.CodeMirror-activeline .cm-indent-guide {
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
 }

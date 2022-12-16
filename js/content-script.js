@@ -174,6 +174,7 @@ const launchCodeMirror = (mode) => {
         autoRefresh: true,
         readOnly: true,
         maxHighlightLength: 10000,
+        styleActiveLine: true,
         matchBrackets: true,
         indentUnit: 4,
         indentGuide: true,
