@@ -1,0 +1,51 @@
+
+body {
+    background-color: #111;
+    color: #eee;
+}
+
+main {
+    margin-inline: auto;
+    max-width: 650px;
+}
+
+#options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.Relight-UI.entry {
+    background-color: #222;
+    padding: 8px;
+}
+
+
+.Relight-UI.label {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.Relight-UI.input {
+    background-color: #333;
+    border: none;
+    outline: none;
+    accent-color: #333;
+    color: #fff;
+    padding: 5px;
+}
+
+.Relight-UI.input[type="checkbox"] {
+    filter: brightness(.8) invert(1);
+}
+
+.Relight-UI.reset {
+    margin-inline: 5px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.Relight-UI.reset::after {
+    content: "↺";
+}

@@ -49,6 +49,10 @@ const reqLoadCodeMirror = async () => {
     return 1
 }
 
+const reqLoadThemeCSS = async (theme) => {
+    await chrome.runtime.sendMessage({ action: "loadThemeCSS", theme });
+}
+
 
 const getCodeMirrorMode = async (fileExtension) => {
     if (typeof CodeMirror === "undefined")
@@ -162,12 +166,10 @@ const shouldFormat = async (stringContent) => {
 
 
 
-const launchCodeMirror = (mode) => {
+const launchCodeMirror = (mode, settings) => {
     console.debug("[Relight]", "started CM");
 
-    // TODO move to user defined settings  
-    let theme = "dracula";
-    let autoFormat = true;
+    const { theme, autoFormat } = settings;
 
 
     const contentEln = document.querySelector("pre");
@@ -218,8 +220,9 @@ const launchCodeMirror = (mode) => {
 
     // refresh mode dependency finishes loading
     refreshModeTillReady(editor, mode).then(() => {
-        if (autoFormat && shouldFormat(editor.getValue())) console.log("auto formated")
+        if (autoFormat && shouldFormat(editor.getValue())) {
             formatCode(editor);
+        }
     });
 }
 
@@ -276,8 +279,13 @@ const main = () => {
         console.error("[Relight]", "exit: file type not supported");
         throw "failed to init code mirror";
 
-    }).then(mode => {
-        launchCodeMirror(mode);
+    }).then(async (mode) => {
+        const result = await chrome.storage.sync.get(["settings"]);
+        const { settings } = result;
+        const { theme } = settings;
+
+        await reqLoadThemeCSS(theme);
+        launchCodeMirror(mode, settings);
     });
 } // main
 

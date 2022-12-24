@@ -4,7 +4,8 @@
     "version": "1.0",
     "manifest_version": 3,
     "background": {
-        "service_worker": "js/background.js"
+        "service_worker": "js/background.js",
+        "type": "module"
     },
     "permissions": [
         "storage",
@@ -45,5 +46,9 @@
                 "css/addon.css"
             ]
         }
-    ]
+    ],
+    "options_ui": {
+        "open_in_tab": true,
+        "page": "html/options.html"
+    }
 }

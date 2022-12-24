@@ -1,3 +1,5 @@
+import RelightSettings from "./settings.config.js"
+
 const LIB_ROOT = "js/lib/";
 
 
@@ -25,8 +27,7 @@ const CODEMIRROR_ESSENTIAL_CSS = [
     CODEMIRROR_ROOT + "doc/docs.css",
     CODEMIRROR_ROOT + "mode/tiddlywiki/tiddlywiki.css",
     CODEMIRROR_ROOT + "mode/tiki/tiki.css",
-    CODEMIRROR_ROOT + "addon/indent-guide/indent-guide.css",
-    CODEMIRROR_ROOT + "theme/dracula.css" // TODO: TMP SOLUTION
+    CODEMIRROR_ROOT + "addon/indent-guide/indent-guide.css"
 ]
 
 const CODEMIRROR_ESSENTIAL_JS = [
@@ -55,12 +56,14 @@ const handleExecute = (files, sender, sendResponse) => {
 
 const handleStyle = (files, sender, sendResponse) => {
 
-    chrome.scripting.insertCSS({
+    let promise = chrome.scripting.insertCSS({
         target: { tabId: sender.tab.id },
         files: files,
     });  // TODO: Figure out how callback works to ensure stability
 
     console.debug("[Relight] Load CSS file from", files);
+
+    sendResponse(promise);
 }
 
 
@@ -80,10 +83,15 @@ const loadCodeMirrorMode = (modeObj, sender, sendResponse) => {
 
 const loadBeautify = (beautifyMode, sender, sendResponse) => {
     const file = BEAUTIFY_FILES[beautifyMode];
-    
+
     // TODO error handling for invalid beautifyMode
 
     handleExecute([file], sender, sendResponse);
+}
+
+const loadThemeCSS = (theme, sender, sendResponse) => {
+    const path = `${CODEMIRROR_ROOT}theme/${theme}.css`;
+    handleStyle([path], sender, sendResponse);
 }
 
 
@@ -108,6 +116,10 @@ chrome.runtime.onMessage.addListener(
                 loadBeautify(request.mode, sender, sendResponse);
                 break;
 
+            case "loadThemeCSS":
+                loadThemeCSS(request.theme, sender, sendResponse);
+                break;
+
             default:
                 sendResponse({ code: 0 })
 
@@ -115,3 +127,10 @@ chrome.runtime.onMessage.addListener(
 
     }
 );
+
+
+
+
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.storage.sync.set({ settings: RelightSettings });
+});
