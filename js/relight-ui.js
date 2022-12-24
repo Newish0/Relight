@@ -5,21 +5,69 @@ class RelightUI {
     constructor(root, theme, langList, defaultLang, langSelCallback, lineWrapping, lineWrapCallback, formatCodeCallback) {
         this.root = root;
         this.theme = theme;
-        this.elements = []
+        this.topElements = [];
+        this.bottomElements = [];
 
         const langSel = this.createLangSel(langList, defaultLang, langSelCallback);
         const lineWrap = this.createLineWrap(lineWrapping, lineWrapCallback);
         const autoFormatBtn = this.createFormatCodeBtn(formatCodeCallback);
 
-        this.elements.push(this.createToolbar(langSel, lineWrap, autoFormatBtn));
+        this.topElements.push(this.createToolbar(langSel, lineWrap, autoFormatBtn));
 
+
+        // Binded elements
+        this.infoData = {
+            lineCount: 0,
+            fileSize: 0,
+            selection: "",
+            cursor: {
+                line: 0,
+                ch: 0,
+                sticky: "",
+                xRel: 0
+            }
+        }
+
+        this.lineCountEln = this.createInfoEln(this.infoData.lineCount + " Lines");
+        this.fileSizeEln = this.createInfoEln(this.infoData.fileSize + " Bytes");
+        this.lineEln = this.createInfoEln("Ln " + this.infoData.cursor.line);
+        this.chEln = this.createInfoEln("Col " + this.infoData.cursor.ch);
+        this.selectedEln = this.createInfoEln(`(${this.infoData.selection.length} selected)`);
+
+        // const fileSizeEln = this.createBindInfo();
+
+        this.bottomElements.push(this.createInfoBar(this.lineEln, this.chEln, this.selectedEln, this.lineCountEln, this.fileSizeEln));
     }
 
     render() {
-        for (const eln of this.elements)
+        for (const eln of this.topElements)
+            eln.remove();
+        for (const eln of this.bottomElements)
             eln.remove();
 
-        this.root.append(...this.elements)
+        this.root.prepend(...this.topElements);
+        this.root.append(...this.bottomElements);
+    }
+
+    createInfoEln(content) {
+        const infoEln = document.createElement("span");
+        infoEln.textContent = content;
+        return infoEln;
+    }
+
+    infoDataUpdate() {
+        this.lineCountEln.textContent = this.infoData.lineCount + " Lines";
+        this.fileSizeEln.textContent = this.infoData.fileSize + " Bytes";
+        this.lineEln.textContent = "Ln " + this.infoData.cursor.line;
+        this.chEln.textContent = "Col " + this.infoData.cursor.ch;
+        this.selectedEln.textContent = `(${this.infoData.selection.length} selected)`;
+    }
+
+    createInfoBar(...elements) {
+        const bar = document.createElement("div");
+        bar.className = `Relight-UI Bar InfoBar cm-s-${this.theme} CodeMirror`;
+        bar.append(...elements);
+        return bar;
     }
 
     createFormatCodeBtn(formatCodeCallback) {
@@ -70,7 +118,7 @@ class RelightUI {
 
     createToolbar(...elements) {
         const bar = document.createElement("div");
-        bar.className = `Relight-UI Toolbar cm-s-${this.theme} CodeMirror`;
+        bar.className = `Relight-UI Bar Toolbar cm-s-${this.theme} CodeMirror`;
         bar.append(...elements);
         return bar;
     }

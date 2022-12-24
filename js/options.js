@@ -5,18 +5,35 @@ const resetEntry = (key, inputEln) => {
 
     if (typeof (defaultVal) === "boolean") {
         inputEln.checked = defaultVal;
+    } else if (typeof (defaultVal) === "object") {
+        inputEln.value = JSON.stringify(defaultVal);
     } else {
         inputEln.value = defaultVal;
     }
 }
 
-const updateSettings = (key, newVal) => {
+const updateSettings = async (key, type, newVal) => {
 
-    chrome.storage.sync.get(["settings"]).then((result) => {
-        const { settings } = result;
-        settings[key] = newVal;
-        chrome.storage.sync.set({ settings });
-    });
+    const result = await chrome.storage.sync.get(["settings"]);
+
+    const { settings } = result;
+    try {
+        switch (type) {
+            case "string":
+            case "number":
+            case "boolean":
+                break;
+            case "json":
+                newVal = JSON.parse(newVal);
+            case "object":
+        }
+    } catch (error) {
+        return false;
+    }
+
+    settings[key] = newVal;
+    chrome.storage.sync.set({ settings });
+    return true;
 }
 
 const createEntry = (key, value, callback) => {
@@ -30,27 +47,47 @@ const createEntry = (key, value, callback) => {
     input.className = "Relight-UI input";
     reset.className = "Relight-UI reset input";
 
-    input.addEventListener("change", () => { callback(key, typeof (value) === "boolean" ? input.checked : input.value) });
-    input.addEventListener("keyup", () => { callback(key, typeof (value) === "boolean" ? input.checked : input.value) });
-
-    reset.addEventListener("click", () => {
-        resetEntry(key, input);
-        callback(key, typeof (value) === "boolean" ? input.checked : input.value);
-    });
-
     label.textContent = key;
     reset.title = "reset";
 
+    let type = "string";
     if (typeof (value) === "boolean") {
         input.type = "checkbox";
         input.checked = value;
+        type = "boolean";
+    } else if (typeof (value) === "object") {
+        input.type = "text";
+        input.spellcheck = false;
+        input.value = JSON.stringify(value);
+        type = "json";
     } else if (typeof (value) === "number") {
         input.type = "number";
         input.value = value;
+        type = "number";
     } else {
         input.type = "text";
+        input.spellcheck = false;
         input.value = value;
+        type = "string";
     }
+
+    const handleCallbackAndError = () => {
+        callback(key, type, typeof (value) === "boolean" ? input.checked : input.value).then(error => {
+            if (!error) {
+                input.classList.add("error");
+            } else {
+                input.classList.remove("error");
+            }
+        });
+    }
+
+    input.addEventListener("change", handleCallbackAndError);
+    input.addEventListener("keyup", handleCallbackAndError);
+
+    reset.addEventListener("click", () => {
+        resetEntry(key, input);
+        handleCallbackAndError();
+    });
 
     entry.append(label, input, reset);
     return entry;

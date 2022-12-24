@@ -76,7 +76,7 @@ const loadCodeMirror = (sender, sendResponse) => {
 const loadCodeMirrorMode = (modeObj, sender, sendResponse) => {
     const { mode } = modeObj;
 
-    if(mode) {
+    if(mode != "null") {
         const modePath = `${CODEMIRROR_ROOT}mode/${mode}/${mode}.js`;
         handleExecute([modePath], sender, sendResponse);
     }

@@ -182,7 +182,53 @@ const launchCodeMirror = (mode, settings) => {
         indentUnit,
         indentGuide,
         hideFirstIndentGuide,
-        useIndentedWrappedLine
+        useIndentedWrappedLine,
+
+        // Additional Code Mirror Settings
+        lineSeparator,
+        // specialChars,
+        // electricChars,
+        inputStyle,
+        spellcheck,
+        autocorrect,
+        autocapitalize,
+        rtlMoveVisually,
+        wholeLineUpdateBefore,
+        keyMap,
+        extraKeys,
+        // configureMouse,
+        gutters,
+        fixedGutter,
+        coverGutterNextToScrollbar,
+        scrollbarStyle,
+        firstLineNumber,
+        showCursorWhenSelecting,
+        resetSelectionOnContextMenu,
+        lineWiseCopyCut,
+        pasteLinesPerSelection,
+        selectionsMayTouch,
+        screenReaderLabel,
+        disableInput,
+        dragDrop,
+        allowDropFileTypes,
+        cursorBlinkRate,
+        cursorScrollMargin,
+        cursorHeight,
+        singleCursorHeightPerLine,
+        workTime,
+        workDelay,
+        flattenSpans,
+        addModeClass,
+        pollInterval,
+        undoDepth,
+        historyEventDelay,
+        viewportMargin,
+        moveInputWithCursor,
+        tabindex,
+        autofocus,
+        direction,
+        // phrases,
+        // hintOptions
     } = settings;
 
 
@@ -200,7 +246,7 @@ const launchCodeMirror = (mode, settings) => {
     );
 
     document.body.appendChild(container);
-    ui.render();
+
 
     const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
     if (isDarkTheme) container.style.backgroundColor = "#000";
@@ -227,16 +273,74 @@ const launchCodeMirror = (mode, settings) => {
         hideFirstIndentGuide,
         // foldGutter: true,
         // gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-        // extraKeys: { "Ctrl-Space": "autocomplete" }
-    });
+        // extraKeys: { "Ctrl-Space": "autocomplete" },
 
-    console.log(editor)
+        // Additional Code Mirror Settings
+        lineSeparator,
+        // specialChars,
+        // electricChars,
+        inputStyle,
+        spellcheck,
+        autocorrect,
+        autocapitalize,
+        rtlMoveVisually,
+        wholeLineUpdateBefore,
+        keyMap,
+        extraKeys,
+        // configureMouse,
+        gutters,
+        fixedGutter,
+        coverGutterNextToScrollbar,
+        scrollbarStyle,
+        firstLineNumber,
+        showCursorWhenSelecting,
+        resetSelectionOnContextMenu,
+        lineWiseCopyCut,
+        pasteLinesPerSelection,
+        selectionsMayTouch,
+        screenReaderLabel,
+        disableInput,
+        dragDrop,
+        allowDropFileTypes,
+        cursorBlinkRate,
+        cursorScrollMargin,
+        cursorHeight,
+        singleCursorHeightPerLine,
+        workTime,
+        workDelay,
+        flattenSpans,
+        addModeClass,
+        pollInterval,
+        undoDepth,
+        historyEventDelay,
+        viewportMargin,
+        moveInputWithCursor,
+        tabindex,
+        autofocus,
+        direction,
+        // phrases,
+        // hintOptions
+    });
 
     if (useIndentedWrappedLine) {
         addIndentedWrappedLine(editor);
     }
 
     editor.setSize("100%", "100%");
+
+    const updateUIBindInfoData = () => {
+        ui.infoData.selection = editor.getSelection();
+        ui.infoData.cursor = editor.getCursor();
+        ui.infoData.lineCount = editor.lineCount();
+        ui.infoData.fileSize = byteLengthOf(editor.getValue());
+        ui.infoDataUpdate();
+    }
+
+    editor.on("cursorActivity", updateUIBindInfoData);
+    editor.on("change", updateUIBindInfoData);
+    updateUIBindInfoData();
+
+    ui.render();
 
     // refresh mode dependency finishes loading
     refreshModeTillReady(editor, mode).then(() => {
@@ -259,6 +363,35 @@ const addIndentedWrappedLine = (editor) => {
         }
     });
     editor.refresh();
+}
+
+// count UTF-8 bytes of a string
+// source: https://stackoverflow.com/a/34920444
+const byteLengthOf = (s) => {
+    //assuming the String is UCS-2(aka UTF-16) encoded
+    var n = 0;
+    for (var i = 0, l = s.length; i < l; i++) {
+        var hi = s.charCodeAt(i);
+        if (hi < 0x0080) { //[0x0000, 0x007F]
+            n += 1;
+        } else if (hi < 0x0800) { //[0x0080, 0x07FF]
+            n += 2;
+        } else if (hi < 0xD800) { //[0x0800, 0xD7FF]
+            n += 3;
+        } else if (hi < 0xDC00) { //[0xD800, 0xDBFF]
+            var lo = s.charCodeAt(++i);
+            if (i < l && lo >= 0xDC00 && lo <= 0xDFFF) { //followed by [0xDC00, 0xDFFF]
+                n += 4;
+            } else {
+                throw new Error("UCS-2 String malformed");
+            }
+        } else if (hi < 0xE000) { //[0xDC00, 0xDFFF]
+            throw new Error("UCS-2 String malformed");
+        } else { //[0xE000, 0xFFFF]
+            n += 3;
+        }
+    }
+    return n;
 }
 
 
