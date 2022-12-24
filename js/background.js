@@ -76,9 +76,15 @@ const loadCodeMirror = (sender, sendResponse) => {
 const loadCodeMirrorMode = (modeObj, sender, sendResponse) => {
     const { mode } = modeObj;
 
-    if(mode != "null") {
-        const modePath = `${CODEMIRROR_ROOT}mode/${mode}/${mode}.js`;
-        handleExecute([modePath], sender, sendResponse);
+    if (mode != "null") {
+        const files = []
+
+        // Special case
+        if (mode === "htmlmixed") files.push(`${CODEMIRROR_ROOT}mode/xml/xml.js`);
+
+        files.push(`${CODEMIRROR_ROOT}mode/${mode}/${mode}.js`);
+
+        handleExecute(files, sender, sendResponse);
     }
 }
 

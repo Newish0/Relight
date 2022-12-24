@@ -416,8 +416,7 @@ const main = () => {
     }
 
     console.debug("[Relight]", "determined file type as", fileExt);
-
-
+    
     cmReady.then((res) => {
         if (!res) {
             console.error("[Relight]", "exit: failed to init code mirror");
@@ -426,7 +425,7 @@ const main = () => {
 
         return getCodeMirrorMode(fileExt);
     }).then(mode => {
-        if (mode)
+        if (mode) 
             return reqLoadModeDependency(mode);
 
         console.error("[Relight]", "exit: file type not supported");
