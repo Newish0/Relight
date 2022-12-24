@@ -30,9 +30,9 @@ class RelightUI {
 
         this.lineCountEln = this.createInfoEln(this.infoData.lineCount + " Lines");
         this.fileSizeEln = this.createInfoEln(this.infoData.fileSize + " Bytes");
-        this.lineEln = this.createInfoEln("Ln " + this.infoData.cursor.line);
-        this.chEln = this.createInfoEln("Col " + this.infoData.cursor.ch);
-        this.selectedEln = this.createInfoEln(`(${this.infoData.selection.length} selected)`);
+        this.lineEln = this.createInfoEln("Ln " + (this.infoData.cursor.line + 1));
+        this.chEln = this.createInfoEln("Col " + (this.infoData.cursor.ch + 1));
+        this.selectedEln = this.createInfoEln("");
 
         // const fileSizeEln = this.createBindInfo();
 
@@ -58,9 +58,9 @@ class RelightUI {
     infoDataUpdate() {
         this.lineCountEln.textContent = this.infoData.lineCount + " Lines";
         this.fileSizeEln.textContent = this.infoData.fileSize + " Bytes";
-        this.lineEln.textContent = "Ln " + this.infoData.cursor.line;
-        this.chEln.textContent = "Col " + this.infoData.cursor.ch;
-        this.selectedEln.textContent = `(${this.infoData.selection.length} selected)`;
+        this.lineEln.textContent = "Ln " + (this.infoData.cursor.line + 1);
+        this.chEln.textContent = "Col " + (this.infoData.cursor.ch + 1);
+        this.selectedEln.textContent = this.infoData.selection.length > 0 ? `(${this.infoData.selection.length} selected)`: "";
     }
 
     createInfoBar(...elements) {
