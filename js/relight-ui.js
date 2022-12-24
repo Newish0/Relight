@@ -2,13 +2,13 @@
 // Trying to be like React...
 class RelightUI {
 
-    constructor(root, theme, langList, defaultLang, langSelCallback, lineWrapCallback, formatCodeCallback) {
+    constructor(root, theme, langList, defaultLang, langSelCallback, lineWrapping, lineWrapCallback, formatCodeCallback) {
         this.root = root;
         this.theme = theme;
         this.elements = []
 
         const langSel = this.createLangSel(langList, defaultLang, langSelCallback);
-        const lineWrap = this.createLineWrap(lineWrapCallback);
+        const lineWrap = this.createLineWrap(lineWrapping, lineWrapCallback);
         const autoFormatBtn = this.createFormatCodeBtn(formatCodeCallback);
 
         this.elements.push(this.createToolbar(langSel, lineWrap, autoFormatBtn));
@@ -30,13 +30,14 @@ class RelightUI {
         return btn;
     }
 
-    createLineWrap(lineWrapCallback) {
+    createLineWrap(lineWrapping, lineWrapCallback) {
         const lineWrapContainer = document.createElement("span");
         const lineWarpCheck = document.createElement("input");
         const lineWarpLabel = document.createElement("label");
 
         lineWarpCheck.type = "checkbox";
         lineWarpCheck.id = "Relight-UI-Line-Wrap-Check";
+        lineWarpCheck.checked = lineWrapping;
         lineWarpCheck.addEventListener("change", lineWrapCallback);
 
         lineWarpLabel.textContent = "Line Wrap";

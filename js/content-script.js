@@ -169,7 +169,21 @@ const shouldFormat = async (stringContent) => {
 const launchCodeMirror = (mode, settings) => {
     console.debug("[Relight]", "started CM");
 
-    const { theme, autoFormat } = settings;
+    const { theme,
+        autoFormat,
+        tabSize,
+        smartIndent,
+        lineWrapping,
+        lineNumbers,
+        readOnly,
+        maxHighlightLength,
+        styleActiveLine,
+        matchBrackets,
+        indentUnit,
+        indentGuide,
+        hideFirstIndentGuide,
+        useIndentedWrappedLine
+    } = settings;
 
 
     const contentEln = document.querySelector("pre");
@@ -180,6 +194,7 @@ const launchCodeMirror = (mode, settings) => {
         CodeMirror.modeInfo,
         mode,
         (evt) => { modeChangeCallback(evt, editor) },
+        lineWrapping,
         (evt) => { lineWrapChangeCallback(evt, editor) },
         () => { formatCode(editor) }
     );
@@ -197,25 +212,28 @@ const launchCodeMirror = (mode, settings) => {
     const editor = CodeMirror(container, {
         value: textContent,
         mode: mode.mime,
-        tabSize: 4,
-        smartIndent: true,
+        tabSize,
+        smartIndent,
         theme: theme, // TODO: user selectable
-        lineWrapping: false,
-        lineNumbers: true,
+        lineWrapping,
+        lineNumbers,
         autoRefresh: true,
-        readOnly: true,
-        maxHighlightLength: 10000,
-        styleActiveLine: true,
-        matchBrackets: true,
-        indentUnit: 4,
-        indentGuide: true,
-        hideFirstIndentGuide: true,
+        readOnly,
+        maxHighlightLength,
+        styleActiveLine,
+        matchBrackets,
+        indentUnit,
+        indentGuide,
+        hideFirstIndentGuide,
         // foldGutter: true,
         // gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
         // extraKeys: { "Ctrl-Space": "autocomplete" }
     });
 
-    addIndentedWrappedLine(editor);
+    if (useIndentedWrappedLine) {
+        addIndentedWrappedLine(editor);
+    }
+
     editor.setSize("100%", "100%");
 
     // refresh mode dependency finishes loading
