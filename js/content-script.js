@@ -230,6 +230,8 @@ const launchCodeMirror = (mode, settings) => {
         // extraKeys: { "Ctrl-Space": "autocomplete" }
     });
 
+    console.log(editor)
+
     if (useIndentedWrappedLine) {
         addIndentedWrappedLine(editor);
     }
