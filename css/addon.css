@@ -1,3 +1,17 @@
+:root {
+    --dark-0: #111;
+    --dark-1: #222;
+    --dark-2: #333;
+
+    --light-0: #fff;
+    --light-1: #eee;
+    --light-2: #ddd;
+
+    --error-bg: rgba(255, 0, 0, 0.15);
+    --error-main: rgba(255, 0, 0, 0.5);
+}
+
+
 .Relight-App-Container {
     position: absolute;
     display: flex;

@@ -11,8 +11,9 @@ class RelightUI {
         const langSel = this.createLangSel(langList, defaultLang, langSelCallback);
         const lineWrap = this.createLineWrap(lineWrapping, lineWrapCallback);
         const autoFormatBtn = this.createFormatCodeBtn(formatCodeCallback);
+        const settingsBtn = this.createSettingsBtn();
 
-        this.topElements.push(this.createToolbar(langSel, lineWrap, autoFormatBtn));
+        this.topElements.push(this.createToolbar(langSel, lineWrap, autoFormatBtn, settingsBtn));
 
 
         // Binded elements
@@ -60,7 +61,7 @@ class RelightUI {
         this.fileSizeEln.textContent = this.infoData.fileSize + " Bytes";
         this.lineEln.textContent = "Ln " + (this.infoData.cursor.line + 1);
         this.chEln.textContent = "Col " + (this.infoData.cursor.ch + 1);
-        this.selectedEln.textContent = this.infoData.selection.length > 0 ? `(${this.infoData.selection.length} selected)`: "";
+        this.selectedEln.textContent = this.infoData.selection.length > 0 ? `(${this.infoData.selection.length} selected)` : "";
     }
 
     createInfoBar(...elements) {
@@ -68,6 +69,14 @@ class RelightUI {
         bar.className = `Relight-UI Bar InfoBar cm-s-${this.theme} CodeMirror`;
         bar.append(...elements);
         return bar;
+    }
+
+    createSettingsBtn() {
+        const btn = document.createElement("button");
+        btn.textContent = "⚙";
+        btn.addEventListener("click", () => { chrome.runtime.sendMessage({ action: "openOptionsPage" }) })
+        btn.className = "Relight-UI";
+        return btn;
     }
 
     createFormatCodeBtn(formatCodeCallback) {

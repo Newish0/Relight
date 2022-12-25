@@ -128,6 +128,10 @@ chrome.runtime.onMessage.addListener(
                 loadThemeCSS(request.theme, sender, sendResponse);
                 break;
 
+            case "openOptionsPage":
+                chrome.runtime.openOptionsPage();
+                sendResponse({ code: 1 })
+                break;
             default:
                 sendResponse({ code: 0 })
 

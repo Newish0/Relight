@@ -154,11 +154,11 @@ const formatCodeAsHTML = async (editor) => {
     editor.setValue(html_beautify(editor.getValue(), options));
 }
 
-const shouldFormat = async (stringContent, maxAcceptableLineLen = 4096) => {
+const shouldFormat = async (stringContent, autoFormatLineLenThreshold = 4096) => {
     const lines = stringContent.split("\n");
 
     for (const line of lines) {
-        if (line.length > maxAcceptableLineLen) {
+        if (line.length > autoFormatLineLenThreshold) {
             return true;
         }
     }
@@ -171,7 +171,7 @@ const shouldFormat = async (stringContent, maxAcceptableLineLen = 4096) => {
 const launchCodeMirror = (mode, settings) => {
     console.debug("[Relight]", "started CM");
 
-    const { theme, autoFormat, lineWrapping, useIndentedWrappedLine, maxAcceptableLineLen } = settings;
+    const { theme, autoFormat, lineWrapping, useIndentedWrappedLine, autoFormatLineLenThreshold } = settings;
 
     const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const contentEln = document.querySelector("pre");
@@ -224,7 +224,7 @@ const launchCodeMirror = (mode, settings) => {
 
     // refresh mode dependency finishes loading
     refreshModeTillReady(editor, mode).then(() => {
-        if (autoFormat && shouldFormat(editor.getValue(), maxAcceptableLineLen)) {
+        if (autoFormat && shouldFormat(editor.getValue(), autoFormatLineLenThreshold)) {
             formatCode(editor);
         }
     });

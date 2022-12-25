@@ -1,6 +1,6 @@
 const RelightSettings = {
     // Non-CodeMirror settings
-    maxAcceptableLineLen: 4096,
+    autoFormatLineLenThreshold: 4096,
     autoFormat: false,
     useIndentedWrappedLine: false,
 
