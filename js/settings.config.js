@@ -1,6 +1,11 @@
 const RelightSettings = {
-    theme: "dracula",
+    // Non-CodeMirror settings
+    maxAcceptableLineLen: 4096,
     autoFormat: false,
+    useIndentedWrappedLine: false,
+
+    /// CodeMirror settings
+    theme: "dracula",
     tabSize: 4,
     smartIndent: true,
     lineWrapping: false,
@@ -12,7 +17,6 @@ const RelightSettings = {
     indentUnit: 4,
     indentGuide: true,
     hideFirstIndentGuide: true,
-    useIndentedWrappedLine: false,
     indentWithTabs: false,
 
     // Additional CodeMirror Settings

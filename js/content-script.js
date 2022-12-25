@@ -1,5 +1,9 @@
 
 
+const TIMEOUT_LIMIT = 100; // 30 seconds.
+// const TIMEOUT_LIMIT = 30000; // 30 seconds.
+
+
 // check if site is plain text
 const pageIsPlainText = () => {
     return document.body.firstChild.nodeName === "PRE" && document.body.firstChild.textContent === document.body.textContent;
@@ -42,8 +46,11 @@ const reqLoadCodeMirror = async () => {
     await chrome.runtime.sendMessage({ action: "loadCodeMirror" }); // return promise
 
     // Wait until CodeMirror object is defined
+    let timer = 0;
     while (typeof CodeMirror === "undefined") {
-        await sleep(1)
+        if (timer > TIMEOUT_LIMIT) throw new Error("Request CodeMirror Timeout");
+        await sleep(1);
+        timer++;
     }
 
     return 1
@@ -60,7 +67,7 @@ const getCodeMirrorMode = async (fileExtension) => {
 
     // Wait until CodeMirror findModeByExtension is defined
     while (typeof CodeMirror.findModeByExtension === "undefined") {
-        await sleep(1)
+        await sleep(1);
     }
 
     return CodeMirror.findModeByExtension(fileExtension);
@@ -89,16 +96,13 @@ const modeChangeCallback = (evt, editor) => {
     refreshModeTillReady(editor, mode);
 }
 
-
 const lineWrapChangeCallback = (evt, editor) => {
     const { checked } = evt.target;
     editor.setOption("lineWrapping", checked);
 }
 
-
 const formatCode = (editor) => {
     let modeName = editor.getMode().name;
-
     switch (modeName) {
         case "htmlmixed":
         case "html":
@@ -150,13 +154,11 @@ const formatCodeAsHTML = async (editor) => {
     editor.setValue(html_beautify(editor.getValue(), options));
 }
 
-
-
-const shouldFormat = async (stringContent) => {
+const shouldFormat = async (stringContent, maxAcceptableLineLen = 4096) => {
     const lines = stringContent.split("\n");
 
     for (const line of lines) {
-        if (line.length > 4096000) {
+        if (line.length > maxAcceptableLineLen) {
             return true;
         }
     }
@@ -169,69 +171,9 @@ const shouldFormat = async (stringContent) => {
 const launchCodeMirror = (mode, settings) => {
     console.debug("[Relight]", "started CM");
 
-    const { theme,
-        autoFormat,
-        tabSize,
-        smartIndent,
-        lineWrapping,
-        lineNumbers,
-        readOnly,
-        maxHighlightLength,
-        styleActiveLine,
-        matchBrackets,
-        indentUnit,
-        indentGuide,
-        hideFirstIndentGuide,
-        useIndentedWrappedLine,
+    const { theme, autoFormat, lineWrapping, useIndentedWrappedLine, maxAcceptableLineLen } = settings;
 
-        // Additional Code Mirror Settings
-        lineSeparator,
-        // specialChars,
-        // electricChars,
-        inputStyle,
-        spellcheck,
-        autocorrect,
-        autocapitalize,
-        rtlMoveVisually,
-        wholeLineUpdateBefore,
-        keyMap,
-        extraKeys,
-        // configureMouse,
-        gutters,
-        fixedGutter,
-        coverGutterNextToScrollbar,
-        scrollbarStyle,
-        firstLineNumber,
-        showCursorWhenSelecting,
-        resetSelectionOnContextMenu,
-        lineWiseCopyCut,
-        pasteLinesPerSelection,
-        selectionsMayTouch,
-        screenReaderLabel,
-        disableInput,
-        dragDrop,
-        allowDropFileTypes,
-        cursorBlinkRate,
-        cursorScrollMargin,
-        cursorHeight,
-        singleCursorHeightPerLine,
-        workTime,
-        workDelay,
-        flattenSpans,
-        addModeClass,
-        pollInterval,
-        undoDepth,
-        historyEventDelay,
-        viewportMargin,
-        moveInputWithCursor,
-        tabindex,
-        autofocus,
-        direction,
-        // phrases,
-        // hintOptions
-    } = settings;
-
-
+    const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const contentEln = document.querySelector("pre");
     const textContent = contentEln.textContent;
     const container = RelightUI.createAppContainer();
@@ -245,82 +187,20 @@ const launchCodeMirror = (mode, settings) => {
         () => { formatCode(editor) }
     );
 
-    document.body.appendChild(container);
 
-
-    const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
     if (isDarkTheme) container.style.backgroundColor = "#000";
+    document.body.appendChild(container);
+    contentEln.style.display = "none"; // hide original content
 
-    // hide original content
-    contentEln.style.display = "none";
-
-    // create instance of CodeMirror editor
-    const editor = CodeMirror(container, {
+    const cmParam = {
+        ...settings,
         value: textContent,
         mode: mode.mime,
-        tabSize,
-        smartIndent,
-        theme: theme, // TODO: user selectable
-        lineWrapping,
-        lineNumbers,
         autoRefresh: true,
-        readOnly,
-        maxHighlightLength,
-        styleActiveLine,
-        matchBrackets,
-        indentUnit,
-        indentGuide,
-        hideFirstIndentGuide,
-        // foldGutter: true,
-        // gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-        // extraKeys: { "Ctrl-Space": "autocomplete" },
+    };
 
-        // Additional Code Mirror Settings
-        lineSeparator,
-        // specialChars,
-        // electricChars,
-        inputStyle,
-        spellcheck,
-        autocorrect,
-        autocapitalize,
-        rtlMoveVisually,
-        wholeLineUpdateBefore,
-        keyMap,
-        extraKeys,
-        // configureMouse,
-        gutters,
-        fixedGutter,
-        coverGutterNextToScrollbar,
-        scrollbarStyle,
-        firstLineNumber,
-        showCursorWhenSelecting,
-        resetSelectionOnContextMenu,
-        lineWiseCopyCut,
-        pasteLinesPerSelection,
-        selectionsMayTouch,
-        screenReaderLabel,
-        disableInput,
-        dragDrop,
-        allowDropFileTypes,
-        cursorBlinkRate,
-        cursorScrollMargin,
-        cursorHeight,
-        singleCursorHeightPerLine,
-        workTime,
-        workDelay,
-        flattenSpans,
-        addModeClass,
-        pollInterval,
-        undoDepth,
-        historyEventDelay,
-        viewportMargin,
-        moveInputWithCursor,
-        tabindex,
-        autofocus,
-        direction,
-        // phrases,
-        // hintOptions
-    });
+    // create instance of CodeMirror editor
+    const editor = CodeMirror(container, cmParam);
 
     if (useIndentedWrappedLine) {
         addIndentedWrappedLine(editor);
@@ -344,7 +224,7 @@ const launchCodeMirror = (mode, settings) => {
 
     // refresh mode dependency finishes loading
     refreshModeTillReady(editor, mode).then(() => {
-        if (autoFormat && shouldFormat(editor.getValue())) {
+        if (autoFormat && shouldFormat(editor.getValue(), maxAcceptableLineLen)) {
             formatCode(editor);
         }
     });
@@ -395,7 +275,6 @@ const byteLengthOf = (s) => {
 }
 
 
-
 const main = () => {
     console.debug("[Relight]", "at start of main");
 
@@ -416,7 +295,7 @@ const main = () => {
     }
 
     console.debug("[Relight]", "determined file type as", fileExt);
-    
+
     cmReady.then((res) => {
         if (!res) {
             console.error("[Relight]", "exit: failed to init code mirror");
@@ -425,7 +304,7 @@ const main = () => {
 
         return getCodeMirrorMode(fileExt);
     }).then(mode => {
-        if (mode) 
+        if (mode)
             return reqLoadModeDependency(mode);
 
         console.error("[Relight]", "exit: file type not supported");
@@ -440,8 +319,6 @@ const main = () => {
         launchCodeMirror(mode, settings);
     });
 } // main
-
-
 
 
 main();
