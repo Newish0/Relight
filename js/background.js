@@ -80,7 +80,12 @@ const loadCodeMirrorMode = (modeObj, sender, sendResponse) => {
         const files = []
 
         // Special case
-        if (mode === "htmlmixed") files.push(`${CODEMIRROR_ROOT}mode/xml/xml.js`);
+        switch(mode) {
+            case "jsx":
+                files.push(`${CODEMIRROR_ROOT}mode/javascript/javascript.js`);
+            case "htmlmixed":
+                files.push(`${CODEMIRROR_ROOT}mode/xml/xml.js`);
+        }
 
         files.push(`${CODEMIRROR_ROOT}mode/${mode}/${mode}.js`);
 
